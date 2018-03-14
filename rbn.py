@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy
+import scipy.spatial as sp
 
 class RBN:    
     def CreateNet(self, K, N, p):
@@ -110,9 +110,9 @@ if __name__ == '__main__':
     start_time = time.time()
     
     K=2
-    N=500
+    N=200
     p=0.5
-    T=200
+    T=100
     
     red=RBN()
     red.CreateNet(K, N, p)
@@ -128,9 +128,9 @@ if __name__ == '__main__':
     plt.show()
     
     print("Distancia inicial: ")
-    print(scipy.spatial.distance.hamming(State[0], State2[0]))
+    print(sp.distance.hamming(State[0], State2[0]))
     print("Distancia final: ")
-    print(scipy.spatial.distance.hamming(State[T-1], State2[T-1]))
+    print(sp.distance.hamming(State[T-1], State2[T-1]))
     
     A=red.AttractorsRand(1000)
     print("Attractores: ")
