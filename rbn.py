@@ -13,7 +13,6 @@ class RBN:
         Pow=np.flip(Pow, 0)
         self.Con = np.apply_along_axis(np.random.permutation, 1, np.tile(range(N), (N,1) ))[:, 0:K]
         self.Bool = np.random.choice([False, True], size=(N, 2**K), p=[1-p, p])
-        #RBNSort(N, K)
         
         #np.savetxt('test.txt', Bool,  delimiter=',', fmt='%i', newline="\n")
         
@@ -22,6 +21,7 @@ class RBN:
         Con= matrix of connections
         Bool= lookup table
         T = timesteps
+        initial = initial state (random if empty)
         """
         
         K=self.Con[0].size
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     
     red=RBN()
     red.CreateNet(K, N, p)
+    red.RBNSort(N, K)
     
     initial = np.zeros(N,dtype=bool)
     State=red.RunNet(T,  initial)
@@ -132,13 +133,17 @@ if __name__ == '__main__':
     print(scipy.spatial.distance.hamming(State[T-1], State2[T-1]))
     
     A=red.AttractorsRand(1000)
-    print("Attractors: ")
+    print("Attractores: ")
     print(len(A))
-    #print(1.*A)
+    
     edos=0
     for x in A:
         edos+=x.size
     edos/=N
+    
+    print("Longitud promedio de Attractores: ")
+    print(edos/len(A))
+    
     print(str(len(A)/(edos)*100)+"%")
     
     print("--- %s seconds ---" % (time.time() - start_time))
