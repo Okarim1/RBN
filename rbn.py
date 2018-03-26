@@ -8,13 +8,11 @@ class RBN:
         K = number of connections
         N = number of nodes, indexed 0 .. N-1
         """
-        
-        Pow = 2**np.arange(K) # [ 1 2 4 ... ], for converting inputs to numerical value
-        Pow=np.flip(Pow, 0)
+
         self.Con = np.apply_along_axis(np.random.permutation, 1, np.tile(range(N), (N,1) ))[:, 0:K]
-        self.Bool = np.random.choice([False, True], size=(N, 2**K), p=[1-p, p])
+        self.Bool = np.random.randint(0, 2, size=(N, 2**K))  # N random boolean functions, a list of 2^k  ones and zeros.
+        #        self.Bool = np.random.choice([False, True], size=(N, 2**K), p=[1-p, p]) 
         
-        #np.savetxt('test.txt', Bool,  delimiter=',', fmt='%i', newline="\n")
         
     def RunNet(self, T, initial=[]):
         """
@@ -24,13 +22,12 @@ class RBN:
         initial = initial state (random if empty)
         """
         
-        K=self.Con[0].size
         N=len(self.Con)
         
         Pow = 2**np.arange(K) # [ 1 2 4 ... ], for converting inputs to numerical value
         Pow=np.flip(Pow, 0)
         
-        State = np.zeros((T+1,N),dtype=bool)
+        State = np.zeros((T+1,N),dtype=int)
         
         if np.array_equal(initial, []):
             State[0] = np.random.randint(0, 2, N) 
@@ -83,9 +80,10 @@ class RBN:
     def RBNSort(self, N, K):
         SRun = 5     # sorting runs
         ST = 200     # sorting timesteps
-        State = np.zeros((ST+1,N),dtype=bool)
-        Totals = np.zeros((N),dtype=int)
-        Pow = 2**np.arange(K) # [ 1 2 4 ... ], for converting inputs to numerical value
+        State = np.zeros((ST+1,N),dtype=int)
+        Totals = State[0]
+        #        Totals = np.zeros((N),dtype=int)
+        Pow = 2**np.arange(K) # [ 1 2 4 8 16... ], for converting inputs to numerical value
         Pow=np.flip(Pow, 0)
         
         for r in range(SRun):
@@ -110,15 +108,17 @@ if __name__ == '__main__':
     start_time = time.time()
     
     K=2
-    N=200
+    N=5
     p=0.5
     T=100
     
     red=RBN()
     red.CreateNet(K, N, p)
+    print(red.Con)
+    print(red.Bool)
     red.RBNSort(N, K)
     
-    initial = np.zeros(N,dtype=bool)
+    initial = np.zeros(N,dtype=int)
     State=red.RunNet(T,  initial)
     plt.imshow(State, cmap='Greys', interpolation='None')
     plt.show()
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     print("Distancia final: ")
     print(sp.distance.hamming(State[T-1], State2[T-1]))
     
-    A=red.AttractorsRand(1000)
+    A=red.AttractorsRand(1000)   
     print("Attractores: ")
     print(len(A))
     
