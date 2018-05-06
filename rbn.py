@@ -29,7 +29,7 @@ class RBN:
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
         
         
-    def RunNet(self, T, initial=[], M=0, O=0, p=0.5):
+    def RunNet(self, T, initial=[], M=0, O=0):
         """
         Con= matrix of connections
         Bool= lookup table
@@ -46,7 +46,6 @@ class RBN:
                 State[0] = np.random.randint(0, 2, self.N) 
             else:
                 State[0] = initial
-                State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
         else:
             State = np.zeros((T+1,self.N+1),dtype=int)
             if np.array_equal(initial, []):
@@ -57,7 +56,7 @@ class RBN:
         
         for t in range(T):  # 0 .. T-1
                 State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
-                if ( M and O ) != 0:
+                if ( M and O ) != 0:  #Perturbations 
                     if t%O == 0:
                         State[t+1,  np.random.choice(self.N, size=M, replace=False)] = np.random.randint(0, 2, M)
                     
