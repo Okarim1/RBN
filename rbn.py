@@ -29,12 +29,14 @@ class RBN:
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
         
         
-    def RunNet(self, T, initial=[]):
+    def RunNet(self, T, initial=[], M=0, O=0, p=0.5):
         """
         Con= matrix of connections
         Bool= lookup table
         T = timesteps
         initial = initial state (random if empty)
+        M = how many perturbations
+        O = how often the perturbations take place
         """
         Pow = 2**np.arange(np.size(self.Con, 1)) # [ 1 2 4 ... ], for converting inputs to numerical value
         
@@ -44,7 +46,6 @@ class RBN:
                 State[0] = np.random.randint(0, 2, self.N) 
             else:
                 State[0] = initial
-            for t in range(T):  # 0 .. T-1
                 State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
         else:
             State = np.zeros((T+1,self.N+1),dtype=int)
@@ -52,45 +53,46 @@ class RBN:
                 State[0] = np.append([0], np.random.randint(0, 2, self.N))
             else:
                 State[0] = np.append([0],initial)
-            for t in range(T):  # 0 .. T-1
-                State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
-
-            State=State[:,1:]
-        return(State)
+            red.Bool[np.where(red.Con[:,0]==0),0] = State[0, np.where(red.Con[:,0]==0)] # if node doesn't have conections not change 
         
-    def AttractorsRand(self, R, T):
+        for t in range(T):  # 0 .. T-1
+                State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
+                if ( M and O ) != 0:
+                    if t%O == 0:
+                        State[t+1,  np.random.choice(self.N, size=M, replace=False)] = np.random.randint(0, 2, M)
+                    
+                
+        if(type(self.K) is int):
+            return(State)
+        else:
+            return(State[:,1:])
+        
+    def Attractors(self, T, runs=0):
         """
         List of Attractors of R random initial states
-        R = number of runs
+        runs = number of runs (if 0 then List of Attractors of every possible initial state)
         T = timesteps
         """
         attractList=[]
-        for i in range(R):
-            State=red.RunNet(T)
-            unique_elements, counts_elements = np.unique(State, return_counts=True, axis=0)      
-            A=unique_elements[np.where(counts_elements > 1)] #States that appear more than one occasion
-
-            if not(A.tolist() in attractList):  #if A is not in attractList then add it
-                attractList.append(A.tolist())
+        if runs == 0 :
+            for i in range(np.power(2,self.N)):
+                initial=[x=='1' for x in format(i, '0'+str(self.N)+'b')]
                 
-        return attractList
+                State=red.RunNet(T, initial)
+                unique_elements, counts_elements = np.unique(State, return_counts=True, axis=0)      
+                A=unique_elements[np.where(counts_elements > 1)] #States that appear more than one occasion
+                
+                if not(A.tolist() in attractList):  #if A is not in attractList then add it
+                    attractList.append(A.tolist())
+                
+        else:
+            for i in range(runs):
+                State=red.RunNet(T)
+                unique_elements, counts_elements = np.unique(State, return_counts=True, axis=0)      
+                A=unique_elements[np.where(counts_elements > 1)] #States that appear more than one occasion
     
-    def Attractors(self, T):
-        """
-        List of Attractors of every possible initial state
-        T = timesteps
-        """
-        attractList=[]
-        
-        for i in range(np.power(2,self.N)):
-            initial=[x=='1' for x in format(i, '0'+str(self.N)+'b')]
-            
-            State=red.RunNet(T, initial)
-            unique_elements, counts_elements = np.unique(State, return_counts=True, axis=0)      
-            A=unique_elements[np.where(counts_elements > 1)] #States that appear more than one occasion
-            
-            if not(A.tolist() in attractList):  #if A is not in attractList then add it
-                attractList.append(A.tolist())
+                if not(A.tolist() in attractList):  #if A is not in attractList then add it
+                    attractList.append(A.tolist())
                 
         return attractList
         
@@ -155,7 +157,14 @@ if __name__ == '__main__':
     State=red.RunNet(T, initial)
     plt.imshow(State, cmap='Greys', interpolation='None')
     plt.show()
+    E, C = entropia(State)
+    print("Entropia: "+str(np.mean(E)))
+    print("Complejidad: "+str(np.mean(C)))
     
+    initial = np.zeros(N,dtype=int)
+    State=red.RunNet(T, initial, M=2, O=3)
+    plt.imshow(State, cmap='Greys', interpolation='None')
+    plt.show()
     E, C = entropia(State)
     print("Entropia: "+str(np.mean(E)))
     print("Complejidad: "+str(np.mean(C)))
@@ -163,7 +172,6 @@ if __name__ == '__main__':
     State2=red.RunNet(T)
     plt.imshow(State2, cmap='Greys', interpolation='None')
     plt.show()
-    
     E, C = entropia(State2)
     print("Entropia: "+str(np.mean(E)))
     print("Complejidad: "+str(np.mean(C)))
@@ -173,17 +181,15 @@ if __name__ == '__main__':
     print("Distancia final: ")
     print(hamming(State[T-1], State2[T-1])) #distance
     
-    A=red.AttractorsRand(1000, T)
+    A=red.Attractors(T, runs=1000)
     print("Attractores: ")
     print(len(A))
-    
     edos=0
     for x in A:
         edos+=len(x)
-    
     print("Longitud promedio de Attractores: ")
     print(edos/len(A))
-    
-    print(str(len(A)/(edos)*100)+"%")
+    if(edos!= 0):
+        print(str(len(A)/(edos)*100)+"%")
     
     print("--- %s seconds ---" % (time.time() - start_time))
