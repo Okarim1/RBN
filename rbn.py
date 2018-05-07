@@ -120,6 +120,29 @@ class RBN:
             self.Con[1:] = self.Con[Index+1]           # permute the connections
             InvIndex = np.append([-1], np.argsort(Index)) # inverse permutation
             self.Con[1:] = InvIndex[self.Con[1:]]+1        # relabel the connections
+        
+    
+    def antifragile(self, T, runs=1):
+        """
+        plot antifragility of RBN
+        """
+        initial = np.random.randint(0, 2, self.N)
+        State=self.RunNet(T, initial)
+        C0 = entropia(State)
+        O=1
+        f=np.zeros(self.N)
+        for j in range(runs):
+            for i in range(1,self.N+1):
+                State=self.RunNet(T, initial, i, O)
+                C = entropia(State)
+                f[i-1]+=fragility(C, C0, i, O, self.N, T)
+        f/=runs # average fragility by perturbation
+        plt.plot(f)
+        plt.ylabel("Fragility")
+        plt.xlabel("Perturbations")
+        plt.show()
+        
+        return np.amin(f), np.argmin(f) # maximum antifragility
 
 def entropia(state):
     """
@@ -134,7 +157,47 @@ def entropia(state):
     #column by column
     E=-(p0*np.log2(p0)+p1*np.log2(p1)) #Shannon Entropy
     C=4*E*(1-E) #Complexity
-    return E, C
+    return C
+
+def fragility(C, C0, M, O, N, T):
+    dx =(M*(T/O))/(N*T) # degree of perturbation
+    sigma = np.mean(C-C0) # degree of satisfaction
+    return -sigma*dx
+
+def plots(red, T, M, O):
+    initial = np.random.randint(0, 2, red.N)
+    State=red.RunNet(T, initial)
+    plt.imshow(State, cmap='Greys', interpolation='None', aspect='auto')
+    plt.show()
+    C1 = entropia(State)
+    print("Complejidad: "+str(np.mean(C1)))
+    initial2 = np.random.randint(0, 2, red.N)
+    State2=red.RunNet(T, initial2)
+    plt.imshow(State2, cmap='Greys', interpolation='None', aspect='auto')
+    plt.show()
+    C3 = entropia(State2)
+    print("Complejidad: "+str(np.mean(C3)))
+    print("\nDistancia inicial: ")
+    print(hamming(State[0], State2[0])) #distance
+    print("Distancia final: ")
+    print(hamming(State[T-1], State2[T-1])) #distance
+    
+    State=red.RunNet(T, initial, M, O)
+    plt.imshow(State, cmap='Greys', interpolation='None', aspect='auto')
+    plt.show()
+    C2 = entropia(State)
+    print("Complejidad: "+str(np.mean(C2)))
+    print("Fragilidad: "+str(fragility(C2, C1, M, O, red.N, T))) 
+    State2=red.RunNet(T, initial2, M, O)
+    plt.imshow(State2, cmap='Greys', interpolation='None', aspect='auto')
+    plt.show()
+    C4 = entropia(State2)
+    print("Complejidad: "+str(np.mean(C4)))
+    print("Fragilidad: "+str(fragility(C4, C3, M, O, red.N, T)))
+    print("\nDistancia inicial: ")
+    print(hamming(State[0], State2[0])) #distance
+    print("Distancia final: ")
+    print(hamming(State[T-1], State2[T-1])) #distance
 
     
 if __name__ == '__main__':
@@ -142,9 +205,12 @@ if __name__ == '__main__':
     start_time = time.time()
     
     K=2.0
-    N=100
+    N=50
     p=0.5
-    T=200
+    T=100
+    
+    M=5 # how many perturbations
+    O=1 # how often the perturbations take place
     
     red=RBN()
     red.CreateNet(K, N, p)
@@ -152,33 +218,9 @@ if __name__ == '__main__':
 #    print(red.Bool)
 #    red.RBNSort()
     
-    initial = np.zeros(N,dtype=int)
-    State=red.RunNet(T, initial)
-    plt.imshow(State, cmap='Greys', interpolation='None')
-    plt.show()
-    E, C = entropia(State)
-    print("Entropia: "+str(np.mean(E)))
-    print("Complejidad: "+str(np.mean(C)))
+    plots(red, T, M, O)
     
-    initial = np.zeros(N,dtype=int)
-    State=red.RunNet(T, initial, M=2, O=3)
-    plt.imshow(State, cmap='Greys', interpolation='None')
-    plt.show()
-    E, C = entropia(State)
-    print("Entropia: "+str(np.mean(E)))
-    print("Complejidad: "+str(np.mean(C)))
-    
-    State2=red.RunNet(T)
-    plt.imshow(State2, cmap='Greys', interpolation='None')
-    plt.show()
-    E, C = entropia(State2)
-    print("Entropia: "+str(np.mean(E)))
-    print("Complejidad: "+str(np.mean(C)))
-    
-    print("Distancia inicial: ")
-    print(hamming(State[0], State2[0])) #distance
-    print("Distancia final: ")
-    print(hamming(State[T-1], State2[T-1])) #distance
+    print(red.antifragile(T, runs=100))
     
     A=red.Attractors(T, runs=1000)
     print("Attractores: ")
