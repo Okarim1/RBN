@@ -1,6 +1,9 @@
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.distance import hamming
+import multiprocessing
+from functools import partial
 
 class RBN:    
     def CreateNet(self, K, N, p):
@@ -27,8 +30,8 @@ class RBN:
             for i in range(N):
                 self.Con[i+1, 0:Kv[i]] = np.random.choice(N, Kv[i], replace=False)+1
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
-        
-        
+        return
+    
     def RunNet(self, T, initial=[], M=0, O=0):
         """
         Con= matrix of connections
@@ -52,7 +55,7 @@ class RBN:
                 State[0] = np.append([0], np.random.randint(0, 2, self.N))
             else:
                 State[0] = np.append([0],initial)
-            red.Bool[np.where(red.Con[:,0]==0),0] = State[0, np.where(red.Con[:,0]==0)] # if node doesn't have conections not change 
+            self.Bool[np.where(self.Con[:,0]==0),0] = State[0, np.where(self.Con[:,0]==0)] # if node doesn't have conections not change 
         
         for t in range(T):  # 0 .. T-1
                 State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
@@ -65,7 +68,7 @@ class RBN:
             return(State)
         else:
             return(State[:,1:])
-        
+    
     def Attractors(self, T, runs=0):
         """
         List of Attractors of R random initial states
@@ -120,22 +123,22 @@ class RBN:
             self.Con[1:] = self.Con[Index+1]           # permute the connections
             InvIndex = np.append([-1], np.argsort(Index)) # inverse permutation
             self.Con[1:] = InvIndex[self.Con[1:]]+1        # relabel the connections
-        
+        return
     
     def antifragile(self, T, runs=1):
         """
         plot antifragility of RBN
         """
-        initial = np.random.randint(0, 2, self.N)
-        State=self.RunNet(T, initial)
-        C0 = entropia(State)
+        
+        f=np.zeros(int(self.N/2))
         O=1
-        f=np.zeros(self.N)
+        pool = multiprocessing.Pool()
+        
         for j in range(runs):
-            for i in range(1,self.N+1):
-                State=self.RunNet(T, initial, i, O)
-                C = entropia(State)
-                f[i-1]+=fragility(C, C0, i, O, self.N, T)
+            initial = np.random.randint(0, 2, self.N)
+            State=self.RunNet(T, initial)
+            C0 = entropia(State)
+            f+=pool.map(partial(self.func, T=T, initial=initial, O=O, C0=C0), range(1, int(self.N/2)+1))
         f/=runs # average fragility by perturbation
         plt.plot(f)
         plt.ylabel("Fragility")
@@ -143,6 +146,13 @@ class RBN:
         plt.show()
         
         return np.amin(f), np.argmin(f) # maximum antifragility
+    
+    def func(self, i, T, initial, O, C0):
+        f=np.zeros(int(self.N/2))
+        State=self.RunNet(T, initial, i, O)
+        C = entropia(State)
+        f=fragility(C, C0, i, O, self.N, T)
+        return f
 
 def entropia(state):
     """
@@ -198,16 +208,17 @@ def plots(red, T, M, O):
     print(hamming(State[0], State2[0])) #distance
     print("Distancia final: ")
     print(hamming(State[T-1], State2[T-1])) #distance
-
+    return
     
 if __name__ == '__main__':
-    import time
+    __spec__ = "ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>)"
+    
     start_time = time.time()
     
     K=2.0
-    N=50
+    N=100
     p=0.5
-    T=100
+    T=200
     
     M=5 # how many perturbations
     O=1 # how often the perturbations take place
@@ -223,7 +234,7 @@ if __name__ == '__main__':
     print(red.antifragile(T, runs=100))
     
     A=red.Attractors(T, runs=1000)
-    print("Attractores: ")
+    print("\nAttractores: ")
     print(len(A))
     edos=0
     for x in A:
