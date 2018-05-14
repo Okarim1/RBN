@@ -4,6 +4,7 @@ import numpy as np
 from scipy.spatial.distance import hamming
 import multiprocessing
 from functools import partial
+from  tqdm import trange
 
 class RBN:    
     def CreateNet(self, K, N, p):
@@ -32,7 +33,7 @@ class RBN:
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
         return
     
-    def RunNet(self, T, initial=[], M=0, O=0):
+    def RunNet(self, T, initial=[], X=0, O=0):
         """
         Con= matrix of connections
         Bool= lookup table
@@ -59,9 +60,9 @@ class RBN:
         
         for t in range(T):  # 0 .. T-1
                 State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
-                if ( M and O ) != 0:  #Perturbations 
+                if ( X and O ) != 0:  #Perturbations 
                     if t%O == 0:
-                        State[t+1,  np.random.choice(self.N, size=M, replace=False)] = np.random.randint(0, 2, M)
+                        State[t+1,  np.random.choice(self.N, size=X, replace=False)] = np.random.randint(0, 2, X)
                     
                 
         if(type(self.K) is int):
@@ -140,12 +141,8 @@ class RBN:
             C0 = entropia(State)
             f+=pool.map(partial(self.func, T=T, initial=initial, O=O, C0=C0), range(1, int(self.N/2)+1))
         f/=runs # average fragility by perturbation
-        plt.plot(f)
-        plt.ylabel("Fragility")
-        plt.xlabel("Perturbations")
-        plt.show()
-        
-        return np.amin(f), np.argmin(f) # maximum antifragility
+        pool.close()
+        return f
     
     def func(self, i, T, initial, O, C0):
         f=np.zeros(int(self.N/2))
@@ -169,8 +166,8 @@ def entropia(state):
     C=4*E*(1-E) #Complexity
     return C
 
-def fragility(C, C0, M, O, N, T):
-    dx =(M*(T/O))/(N*T) # degree of perturbation
+def fragility(C, C0, X, O, N, T):
+    dx =(X*(T/O))/(N*T) # degree of perturbation
     sigma = np.mean(C-C0) # degree of satisfaction
     return -sigma*dx
 
@@ -209,6 +206,36 @@ def plots(red, T, M, O):
     print("Distancia final: ")
     print(hamming(State[T-1], State2[T-1])) #distance
     return
+
+def plotAntifragile(N, p, T):
+    number_of_iterations=50
+    
+    for K in range(1, 6):
+        f=np.zeros(( number_of_iterations, int(N/2) ))
+        i=0
+        for x in trange(number_of_iterations):
+            red=RBN()
+            red.CreateNet(K, N, p)
+            f[i]=red.antifragile(T, runs=10)
+            i+=1
+            
+        plt.figure()
+        g1=np.mean(f, 0)
+        plt.plot(g1)
+        plt.title("K= "+str(K))
+        plt.ylabel("Fragility")
+        plt.xlabel("Perturbations")
+        plt.show()
+        
+        plt.figure()
+        plt.boxplot(f)
+        plt.title("K= "+str(K))
+        plt.ylabel("Fragility")
+        plt.xlabel("Perturbations")
+        plt.show()
+        plt.show()
+        
+    return
     
 if __name__ == '__main__':
     __spec__ = "ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>)"
@@ -220,7 +247,7 @@ if __name__ == '__main__':
     p=0.5
     T=200
     
-    M=5 # how many perturbations
+    X=5 # how many perturbations
     O=1 # how often the perturbations take place
     
     red=RBN()
@@ -229,16 +256,19 @@ if __name__ == '__main__':
 #    print(red.Bool)
 #    red.RBNSort()
     
-    plots(red, T, M, O)
-    
-    print(red.antifragile(T, runs=100))
+    plots(red, T, X, O)
+    f=red.antifragile(T, runs=100)
+    plt.plot(f)
+    plt.ylabel("Fragility")
+    plt.xlabel("Perturbations")
+    plt.show()   
     
     A=red.Attractors(T, runs=1000)
     print("\nAttractores: ")
     print(len(A))
     edos=0
-    for x in A:
-        edos+=len(x)
+    for i in A:
+        edos+=len(i)
     print("Longitud promedio de Attractores: ")
     print(edos/len(A))
     if(edos!= 0):
