@@ -34,6 +34,195 @@ class RBN:
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
         return
     
+    def CreateNetMod(self, K, N, p, Mod,Prob):
+        """
+        K = number of connections
+        N = number of nodes, indexed 0 .. N-1
+        M = number of modules 
+        """
+        
+        self.K=K
+        self.N=N
+        ProbC=1-Prob
+#        
+#        plt.imshow(Matriz, cmap='Greys', interpolation='None')
+#        plt.show()
+#        Matriz2=np.zeros((N,N))
+#        Matriz=[]
+#        count=0
+#        for i in range(N):
+#            aux=[]
+#            if i%(N/Mod)==0 and i!=0:
+#                count+=N/Mod
+#            k=0
+#            while k<K: 
+#                for j in range(N):
+#                    #print(j)                    
+#                    if Matriz2[i][j]==0: 
+#                        if j<N/Mod+count and j>-1+count:
+#                            Matriz2[i][j]=np.random.choice(2, p=[ProbC-0.009,Prob+0.009])
+#                        elif j>=N/Mod or j<=-1+count:
+#                            Matriz2[i][j]=np.random.choice(2, p=[ProbC,Prob]) 
+#                        if Matriz2[i][j]==1:
+#                            k=k+1
+#                            #print(k)
+#                    if k == K:
+#                        break
+    
+#        count=0 
+#        for i in range(N):
+#            aux=[]
+#            aux2=[]
+#            if K<Mod:
+#                if i%(N/Mod)==0 and i!=0:
+#                    count+=N/Mod    
+#                tem=np.random.choice(2, p=[Prob,ProbC])
+#                if tem ==0 :
+#                    #print("Entre a 1")
+#                    aux.extend(np.random.permutation(range(int(count),int(count)+int(N/Mod))))
+#                elif  tem==1 :
+#                    #print("Entre a 2")
+#                    aux.extend(np.random.permutation(range(0,N)))
+#                #print(aux)
+#            elif K>Mod:
+#                if i%(N/Mod)==0 and i!=0:
+#                    count+=N/Mod    
+#                aux2.extend(np.random.permutation(range(int(count),int(count)+int(N/Mod))))
+#                aux2.extend(np.random.permutation(range(0,N)))
+#                for j in aux2:
+#                    if j not in aux:
+#                        aux.append(j)
+#                #print(aux)
+#            Matriz.append(aux[:K])
+#        #print(Matriz)
+        
+        countin=0 
+        countout=0 
+        Matriz=[]
+        count=0 
+        if Mod<0:
+            for i in range(N):
+                    aux=[]
+                    if i%(N/-Mod)==0 and i!=0:
+                        count+=N/-Mod 
+                    for j in range(K):
+                        if K<=N/-Mod:
+                            tem=np.random.choice(2, p=[Prob,ProbC])
+                            while len(aux) <= j :
+                                if tem ==0 :
+                                    con=[]
+                                    con=np.concatenate((np.arange(0,int(count)),np.arange(int(count)+int(N/-Mod),N)),axis=0)
+                                    NumT=np.random.permutation(con)[:1]
+                                    if NumT not in aux:
+                                        aux.extend(NumT)
+                                        countin+=1
+                                elif  tem==1 :
+                                    NumT=np.random.permutation(range(int(count),int(count)+int(N/-Mod)))[:1]
+                                    if NumT not in aux:
+                                        aux.extend(NumT)
+                                        countout+=1
+                        elif K>N/-Mod:
+                            while len(aux) <= j :
+                                tem=np.random.choice(2, p=[Prob,ProbC])
+                                if tem ==0 :
+                                    con=[]
+                                    con=np.concatenate((np.arange(0,int(count)),np.arange(int(count)+int(N/-Mod),N)),axis=0)
+                                    NumT=np.random.permutation(con)[:1]
+                                    if NumT not in aux:
+                                        aux.extend(NumT)
+                                        countin+=1
+                                elif  tem==1 :
+                                    NumT=np.random.permutation(range(int(count),int(count)+int(N/-Mod)))[:1]
+                                    if NumT not in aux:
+                                        aux.extend(NumT)
+                                        countout+=1
+                    Matriz.append(aux[:K])
+        elif Mod>=0:
+            for i in range(N):
+                aux=[]
+                if i%(N/Mod)==0 and i!=0:
+                        count+=N/Mod 
+                for j in range(K):
+                    if K<=N/Mod:
+                        tem=np.random.choice(2, p=[Prob,ProbC])
+                        while len(aux) <= j :
+                            if tem ==0 :
+                                NumT=np.random.permutation(range(int(count),int(count)+int(N/Mod)))[:1]
+                                if NumT not in aux:
+                                    aux.extend(NumT)
+                                    countin+=1
+                            elif  tem==1 :
+                                NumT=np.random.permutation(range(0,N))[:1]
+                                if NumT not in aux:
+                                    aux.extend(NumT)
+                                    countout+=1
+                    elif K>N/Mod:
+                        while len(aux) <= j :
+                            tem=np.random.choice(2, p=[Prob,ProbC])
+                            if tem ==0 :
+                                NumT=np.random.permutation(range(int(count),int(count)+int(N/Mod)))[:1]
+                                if NumT not in aux:
+                                    aux.extend(NumT)
+                                    countin+=1
+                            elif  tem==1 :
+                                NumT=np.random.permutation(range(0,N))[:1]
+                                if NumT not in aux:
+                                    aux.extend(NumT)
+                                    countout+=1
+                Matriz.append(aux[:K])
+
+#        print(Mod*(N/Mod)*2)
+#        print(countin/(Mod*(N/Mod)*2))
+#        print(countout/((N*N)-(Mod*(N/Mod)*2)))
+        if Mod>=0:
+            if countout!=0:
+                Modularidad=countin%(Mod*(N/Mod)*2)/countout%((N*N)-(Mod*(N/Mod)*2))
+            elif countout==0:
+                Modularidad=100
+        elif Mod<0:
+            if countout!=0:
+                Modularidad=countin%((N*N)-(Mod*(N/Mod)*2))/countout%(Mod*(N/Mod)*2)
+            elif countout==0:
+                Modularidad=100
+#        print(countin)
+#        print(countout)
+        #print("Moduladirad "+str(Modularidad)+"%")
+        
+        Matriz01=np.zeros((N,N))
+        
+        for i in range(N):
+            for j in range(N):
+                if j in Matriz[i]:
+                    Matriz01[i][j]=1
+                    
+#        print(Matriz01)
+#        
+        plt.imshow(Matriz01, cmap='Greys', interpolation='None')
+        plt.show()
+#        
+#        plt.imshow(Matriz2, cmap='Greys', interpolation='None')
+#        plt.show()
+        
+        #print(Matriz)
+
+#        Con2=[]
+#        for i in range(N):
+#            aux=[]
+#            for j in range(N):
+#                #print("i "+str(i)+"j "+str(j))
+#                #print(Matriz[i])
+#                if(Matriz2[i][j]==1):
+#                    aux.append(j)
+#            Con2.append(aux)
+#
+
+        #self.Con=np.array(Con2)
+        #self.Con=np.array(con3)
+        self.Con=np.array(Matriz)
+        self.Bool = np.random.randint(0, 2, size=(N, 2**K))  # N random boolean functions, a list of 2^k  ones and zeros.
+        
+        return Modularidad
+    
     def RunNet(self, T, initial=[], X=0, O=0):
         """
         Con= matrix of connections
@@ -260,6 +449,9 @@ def minAntifragile(red, runs=50):
     """
     Plots the minimum fragility for each K against perturbations and fragility value
     """
+    N=100
+    p=0.5
+    
     vfm = []
     vpm = []
     
@@ -300,26 +492,97 @@ def minAntifragile(red, runs=50):
     plt.show() 
     
     return
+
+def minAntifragileMod(red, runs=50):
+    K=3
+    N=100
+    p=0.5
+    Prob=0.9
+    
+    """
+    Plots the minimum fragility for each M against perturbations and fragility value
+    """
+    vfm = []
+    vpm = []
+    
+    vfbp = []
+    vpbp = []
+    
+    rango=np.arange(-10, 10)
+    for M in tqdm(rango):
+        vf = []
+        vp = []
+        for i in range(runs):
+            if M in [-1, 0, 1]:
+                red.CreateNet(K, N, p)
+            else:
+                red.CreateNetMod(K, N, p, M, Prob)
+            f=red.antifragile(T, runs=100)
+            vf.append(np.amin(f))
+            vp.append(np.argmin(f))
+        vfm.append(np.mean(vf))
+        vpm.append(np.mean(vp))
+        
+        vfbp.append(vf)
+        vpbp.append(vp)
+        
+    plt.plot(rango, vfm)
+    plt.ylabel("Fragility")
+    plt.xlabel("M")
+    plt.show()   
+    plt.plot(rango, vpm)
+    plt.ylabel("Perturbations")
+    plt.xlabel("M")
+    plt.show() 
+    
+    plt.boxplot(vfbp)
+    plt.ylabel("Fragility")
+    plt.xlabel("M")
+    plt.show()
+    plt.boxplot(vpbp)
+    plt.ylabel("Perturbations")
+    plt.xlabel("M")
+    plt.show() 
+    
+    return
+
     
 if __name__ == '__main__':
     __spec__ = "ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>)"
     
     start_time = time.time()
     
-    K=2.0
+    K=3
     N=100
     p=0.5
-    T=40
+    T=100
+    
+    M=10
+    Prob=0.9
     
     X=20 # how many perturbations
     O=1 # how often the perturbations take place
     
     red=RBN()
     
-    minAntifragile(red)
+    #minAntifragileMod(red)
+    
+    red.CreateNetMod(K, N, p, M,Prob)
+    
+    initial = np.zeros(N,dtype=int)
+    State=red.RunNet(T,  initial)
+    plt.imshow(State, cmap='Greys', interpolation='None')
+    plt.show()
+    
+    f=red.antifragile(T, runs=100)
+    plt.plot(f)
+    plt.ylabel("Fragility")
+    plt.xlabel("Perturbations")
+    plt.show()  
     
     
 # =============================================================================
+#     minAntifragile(red)
 #     red.CreateNet(K, N, p)
 #     print(red.Con)
 #     print(red.Bool)
