@@ -6,6 +6,8 @@ import time
 import numpy as np
 import multiprocessing
 from functools import partial
+import matplotlib.pyplot as plt
+import pandas as pd
 
 class RBN:
     def CreateNet(self, K, N, p):
@@ -18,7 +20,7 @@ class RBN:
         self.N=N
         if(type(self.K) is int):
              self.Con = np.apply_along_axis(np.random.permutation, 1, np.tile(range(N), (N,1) ))[:, 0:self.K]
-             self.Bool = np.random.choice([0, 1], size=(N, 2**self.K), p=[1-p, p]) # N random boolean functions, a list of 2^k  ones and zeros.
+             self.Bool = np.random.choice([0, 1], size=(N, 2**self.K), p=[1-p, p]) # N random Boolean functions, a list of 2^K ones and zeros.
              #self.Bool = np.random.randint(0, 2, size=(N, 2**self.K))  # N random boolean functions, a list of 2^k  ones and zeros.
         else:
             Kv=np.random.poisson(self.K, N)
@@ -34,7 +36,24 @@ class RBN:
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
         return
     
-    def RunNet(self, T, initial=[], X=0, O=0):
+    def CreateBioNet(self):
+        self.N=18
+        
+        data=pd.read_csv("BioConInv.csv", sep=",", header=-1)
+        data=data.fillna(0)
+        x=np.array(data.loc[:, 1:]).astype(int)
+        self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+        
+        data=pd.read_csv("BioBool.csv", sep=",", header=0)
+        data=data.fillna(0)
+        y=np.array(data.loc[:, :]).astype(int).transpose()
+        self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+        
+        self.K=np.count_nonzero(self.Con)/12
+        
+        return 
+    
+    def RunNet(self, T, initial=[], X=0, O=0, Bio=False):
         """
         Con= matrix of connections
         Bool= lookup table
@@ -64,9 +83,11 @@ class RBN:
                 if ( X and O ) != 0:  #Perturbations 
                     if t%O == 0:
                         State[t+1,  np.random.choice(self.N, size=X, replace=False)] = np.random.randint(0, 2, X)
-                    
-                
-        if(type(self.K) is int):
+                if(Bio):
+                    State[t+1, 13:]=np.random.randint(0, 2, 6)
+        if(Bio):
+            return(State[:,1:-6])
+        elif(type(self.K) is int):
             return(State)
         else:
             return(State[:,1:])
@@ -127,12 +148,12 @@ class RBN:
             self.Con[1:] = InvIndex[self.Con[1:]]+1        # relabel the connections
         return
     
-    def antifragile(self, T, runs=1, X=None, O=None):
+    def antifragile(self, T, runs=1, X=None, O=None, fraction=1):
         """
         plot antifragility of RBN
         """
         
-        f=np.zeros(int(self.N/2))
+        f=np.zeros(int(self.N/fraction))
         pool = multiprocessing.Pool()
         
         for j in range(runs):
@@ -140,22 +161,22 @@ class RBN:
             State=self.RunNet(T, initial)
             C0 = complexity(State)
             if(O!=None):
-                f+=pool.map(partial(self.func, T=T, initial=initial, O=O, C0=C0), range(1, int(self.N/2)+1))
+                f+=pool.map(partial(self.func, T=T, initial=initial, O=O, C0=C0, fraction=fraction), range(1, int(self.N/fraction)+1))
             elif(X!=None):
-                f+=pool.map(partial(self.func2, T=T, initial=initial, X=X, C0=C0), range(1, int(T/2)+1))
+                f+=pool.map(partial(self.func2, T=T, initial=initial, X=X, C0=C0, fraction=fraction), range(1, int(T/fraction)+1))
         f/=runs # average fragility by perturbation
         pool.close()
         return f
     
-    def func2(self, i, T, initial, X, C0):
-        f=np.zeros(int(self.N/2))
+    def func2(self, i, T, initial, X, C0, fraction=1):
+        f=np.zeros(int(self.N/fraction))
         State=self.RunNet(T, initial, X, i)
         C = complexity(State)
         f=fragility(C, C0, X, i, self.N, T)
         return f
     
-    def func(self, X, T, initial, O, C0):
-        f=np.zeros(int(self.N/2))
+    def func(self, X, T, initial, O, C0, fraction=1):
+        f=np.zeros(int(self.N/fraction))
         State=self.RunNet(T, initial, X, O)
         C = complexity(State)
         f=fragility(C, C0, X, O, self.N, T)
@@ -197,7 +218,7 @@ if __name__ == '__main__':
     K=2.0
     N=5
     p=0.5
-    T=100
+    T=10
     
     red=RBN()
     red.CreateNet(K, N, p)
@@ -214,5 +235,8 @@ if __name__ == '__main__':
     print(edos/len(A))
     if(edos!= 0):
         print(str(len(A)/(edos)*100)+"%")
+        
+    State=red.RunNet(T)
+    plt.imshow(State, cmap='Greys', interpolation='None')
          
     print("--- %s seconds ---" % (time.time() - start_time))

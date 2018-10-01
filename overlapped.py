@@ -13,26 +13,42 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    N=100
+    N=10
     p=0.5
-    T=100
+    T=1024
     
     number_of_iterations=50
-    plt.ylabel("fragility")
+    fraction=1
+    plt.ylabel("Fragility")
     plt.xlabel("X")
-        
-    for K in range(1, 6):
-        f=np.zeros(( number_of_iterations, int(N/2) ))
+    red=rbn.RBN()
+    p1=np.zeros((5, int(N/fraction)))
+    
+    for K in range(1, 5):
+        f=np.zeros(( number_of_iterations, int(N/fraction) ))
         i=0
         for x in trange(number_of_iterations):
-            red=rbn.RBN()
             red.CreateNet(int(K), N, p)
-            f[i]=red.antifragile(T, O=1, runs=10)
+            f[i]=red.antifragile(T, O=1, runs=10, fraction=fraction)
             i+=1
         g1=np.mean(f, 0)
-        plt.plot(np.insert(g1, 0,0), label="K= "+str(K))
-        
+        p1[K-1]=np.sum(np.array(f) < 0, axis=0)/number_of_iterations
+        #g1=np.insert(g1, 0,0)
+        plt.plot(np.arange(1,int(N/fraction)+1), g1, label="K= "+str(K))
+    plt.title("Average Fragility")
     plt.legend()
-        
+    
+    plt.show()
+    plt.ylabel("Probability")
+    for K in range(1, 5):
+        plt.plot(np.arange(1,int(N/fraction)+1), p1[K-1], label="K= "+str(K))
+    plt.title("Probility of generating antifragile networks")
+    plt.legend()
+    
+#    red.CreateBioNet()
+    
+#    f=red.antifragile(100, runs=500, O=1, fraction=1)
+#    plt.plot(f, label="BioNet")
+#    
     
     print("--- %s seconds ---" % (time.time() - start_time))
