@@ -13,18 +13,18 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    N=10
+    N=100
     p=0.5
-    T=1024
+    T=100
     
     number_of_iterations=50
     fraction=1
-    plt.ylabel("Fragility")
+    plt.ylabel("Final Complexity")
     plt.xlabel("X")
     red=rbn.RBN()
     p1=np.zeros((5, int(N/fraction)))
     
-    for K in range(1, 5):
+    for K in range(1, 6):
         f=np.zeros(( number_of_iterations, int(N/fraction) ))
         i=0
         for x in trange(number_of_iterations):
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         p1[K-1]=np.sum(np.array(f) < 0, axis=0)/number_of_iterations
         #g1=np.insert(g1, 0,0)
         plt.plot(np.arange(1,int(N/fraction)+1), g1, label="K= "+str(K))
-    plt.title("Average Fragility")
+    plt.title("Average Complexity")
     plt.legend()
     
     plt.show()

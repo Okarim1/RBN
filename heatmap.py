@@ -18,7 +18,7 @@ if __name__ == '__main__':
     N=18
     p=0.5
     T=100
-    K=4
+    K=5
     
     maxO=20
     number_of_iterations=10
@@ -41,8 +41,8 @@ if __name__ == '__main__':
         j+=1
     
     
-    np.savez("B4.npz", Z)
-    np.savez("BP4.npz", P)
+    np.savez("B5.npz", Z)
+    np.savez("BP5.npz", P)
     
     fig = plt.figure()
     ax = fig.gca(projection='3d')

@@ -36,20 +36,111 @@ class RBN:
                 self.Bool[i+1, 0:2**Kv[i]] = (np.random.choice([0, 1], size=2**Kv[i], p=[1-p, p]))
         return
     
-    def CreateBioNet(self):
-        self.N=18
-        
-        data=pd.read_csv("BioConInv.csv", sep=",", header=-1)
-        data=data.fillna(0)
-        x=np.array(data.loc[:, 1:]).astype(int)
-        self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
-        
-        data=pd.read_csv("BioBool.csv", sep=",", header=0)
-        data=data.fillna(0)
-        y=np.array(data.loc[:, :]).astype(int).transpose()
-        self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
-        
-        self.K=np.count_nonzero(self.Con)/12
+    def CreateBioNet(self, b=1):
+        if(b==1):
+            self.N=18
+            
+            data=pd.read_csv("Con_CD4+TCELL.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_CD4+TCELL.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=6
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
+            
+        elif(b==2):
+            self.N=20
+            
+            data=pd.read_csv("Con_Mammalian Cell Cycle.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_Mammalian Cell Cycle.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=1
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
+            
+        elif(b==3):
+            self.N=15
+            
+            data=pd.read_csv("Con_Cardiac development.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_Cardiac development.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=1
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
+            
+        elif(b==4):
+            self.N=12
+            
+            data=pd.read_csv("Con_Metabolic.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_Metabolic.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=1
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
+            
+        elif(b==5):
+            self.N=28
+            
+            data=pd.read_csv("Con_Death.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_Death.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=3
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
+            
+        elif(b==6):
+            self.N=14
+            
+            data=pd.read_csv("Con_Arabidopsis.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_Arabidopsis.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=0
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
+            
+        elif(b==7):
+            self.N=32
+            
+            data=pd.read_csv("Con_Tumour Cell.csv", sep=",", header=-1)
+            data=data.fillna(0)
+            x=np.array(data.loc[:, 1:]).astype(int)
+            self.Con=np.vstack([np.zeros(x.shape[1],dtype=int), x])
+            
+            data=pd.read_csv("Bool_Tumour Cell.csv", sep=",", header=0)
+            data=data.fillna(0)
+            y=np.array(data.loc[:, :]).astype(int).transpose()
+            self.Bool=np.vstack([np.zeros(y.shape[1],dtype=int), y])
+            self.e=2
+            self.K=np.count_nonzero(self.Con)/(self.N-self.e)
         
         return 
     
@@ -83,10 +174,10 @@ class RBN:
                 if ( X and O ) != 0:  #Perturbations 
                     if t%O == 0:
                         State[t+1,  np.random.choice(self.N, size=X, replace=False)] = np.random.randint(0, 2, X)
-                if(Bio):
-                    State[t+1, 13:]=np.random.randint(0, 2, 6)
-        if(Bio):
-            return(State[:,1:-6])
+                if(Bio and self.e>0):
+                    State[t+1, self.N-self.e+1:]=np.random.randint(0, 2, self.e)
+        if(Bio and self.e>0):
+            return(State[:,1:-self.e])
         elif(type(self.K) is int):
             return(State)
         else:
@@ -158,8 +249,8 @@ class RBN:
         
         for j in range(runs):
             initial = np.random.randint(0, 2, self.N)
-            State=self.RunNet(T, initial)
-            C0 = complexity(State)
+            State=self.RunNet(2*T, initial)
+            C0 = complexity(State[-T:])
             if(O!=None):
                 f+=pool.map(partial(self.func, T=T, initial=initial, O=O, C0=C0, fraction=fraction), range(1, int(self.N/fraction)+1))
             elif(X!=None):
@@ -181,6 +272,11 @@ class RBN:
         C = complexity(State)
         f=fragility(C, C0, X, O, self.N, T)
         return f
+#        if f < 0:
+#            return 1
+#        else:
+#            return 0
+        
 
 def complexity(state):
     """
@@ -194,6 +290,7 @@ def complexity(state):
     
     #column by column
     E=-(p0*np.log2(p0)+p1*np.log2(p1)) #Shannon Entropy
+    E=np.mean(E)
     C=4*E*(1-E) #Complexity
     return C
 

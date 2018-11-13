@@ -15,13 +15,13 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    N=18
-    p=0.5
+    N=12
+    #p=0.5
     T=100
-    K=6.5
+    #K=6.5
     
     maxO=20
-    number_of_iterations=1
+    number_of_iterations=10
     fraction=1
     
     Z= np.zeros([maxO,int(N/fraction)])
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         i=0
         for x in range(number_of_iterations):
             red=rbn.RBN()
-            red.CreateBioNet()
+            red.CreateBioNet(4)
             f[i]=red.antifragile(T, runs=500, O=O+1)
             i+=1
             
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         j+=1
     
     
-    np.savez("BioProb.npz", Z)
+    np.savez("BioProb4.npz", Z)
     
     fig = plt.figure()
     ax = fig.gca(projection='3d')
