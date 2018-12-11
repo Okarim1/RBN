@@ -16,11 +16,11 @@ if __name__ == '__main__':
     start_time = time.time()
     
     K=2.0
-    N=100
+    N=20
     p=0.5
-    T=100
+    T=40
     
-    X=20 # how many perturbations
+    X=2 # how many perturbations
     O=1 # how often the perturbations take place
     
     red=rbn.RBN()

@@ -34,7 +34,7 @@ if __name__ == '__main__':
         vp = []
         for i in range(runs):
             red.CreateNet(K, N, p)
-            f=red.antifragile(T, X=40, runs=10)
+            f=red.antifragile(T, O=1, runs=10)
             vf.append(np.amin(f))
             vp.append(np.argmin(f))
         vfm.append(np.mean(vf))
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     plt.xlabel("K")
     plt.show()   
     plt.plot(rango, vpm)
-    plt.ylabel("O")
+    plt.ylabel("X")
     plt.xlabel("K")
     plt.show() 
     
@@ -57,11 +57,11 @@ if __name__ == '__main__':
     plt.xlabel("K")
     plt.show()
     plt.boxplot(vpbp)
-    plt.ylabel("O")
+    plt.ylabel("X")
     plt.xlabel("K")
     plt.show() 
     
-    np.savez("va.npz", vfm, vpm, vfbp, vpbp)
+    np.savez("newX.npz", vfm, vpm, vfbp, vpbp)
     
     #x=np.arange(0.1, 3.0, 0.1)
     #y=vfm

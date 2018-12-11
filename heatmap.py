@@ -15,12 +15,12 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    N=18
+    N=100
     p=0.5
     T=100
-    K=5
+    K=1
     
-    maxO=20
+    maxO=30
     number_of_iterations=10
     fraction=1
     
@@ -41,8 +41,8 @@ if __name__ == '__main__':
         j+=1
     
     
-    np.savez("B5.npz", Z)
-    np.savez("BP5.npz", P)
+    np.savez("B1.npz", Z)
+    np.savez("BP1.npz", P)
     
     fig = plt.figure()
     ax = fig.gca(projection='3d')
@@ -66,7 +66,6 @@ if __name__ == '__main__':
     
     plt.show()
     
-    plt.style.use('classic')
     fig, ax = plt.subplots()
     im = ax.imshow(Z, extent=[1,red.N,maxO,1])
     plt.xlabel('X')
@@ -76,7 +75,6 @@ if __name__ == '__main__':
     
     plt.show()
     
-    plt.style.use('classic')
     fig, ax = plt.subplots()
     im = ax.imshow(P, cmap=cm.coolwarm, extent=[1,red.N,maxO,1])
     plt.xlabel('X')

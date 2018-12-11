@@ -20,12 +20,14 @@ class RBN:
         self.N=N
         if(type(self.K) is int):
              self.Con = np.apply_along_axis(np.random.permutation, 1, np.tile(range(N), (N,1) ))[:, 0:self.K]
-             self.Bool = np.random.choice([0, 1], size=(N, 2**self.K), p=[1-p, p]) # N random Boolean functions, a list of 2^K ones and zeros.
-             #self.Bool = np.random.randint(0, 2, size=(N, 2**self.K))  # N random boolean functions, a list of 2^k  ones and zeros.
+             #self.Bool = np.random.choice([0, 1], size=(N, 2**self.K), p=[1-p, p]) # N random Boolean functions, a list of 2^K ones and zeros.
+             self.Bool = np.random.randint(0, 2, size=(N, 2**self.K))  # N random boolean functions, a list of 2^k  ones and zeros.
         else:
             Kv=np.random.poisson(self.K, N)
+            Kv=Kv/(np.mean(Kv)/K)
+            Kv=np.ceil(Kv)
+            Kv=Kv.astype(int)
             Kv[np.where(Kv>N)]=N
-            #print(np.mean(Kv))
             maximo=np.amax(Kv)
             
             self.Con=np.zeros((N+1, maximo),dtype=int)
@@ -285,9 +287,8 @@ def complexity(state):
     """
     p1=np.sum(state, axis=0)/np.size(state, 0)
     p0=1-p1
-    np.place(p0, p0==0, 1)
-    np.place(p1, p1==0, 1)
-    
+    np.place(p0, p0==0.0, 1.0)
+    np.place(p1, p1==0.0, 1.0)
     #column by column
     E=-(p0*np.log2(p0)+p1*np.log2(p1)) #Shannon Entropy
     E=np.mean(E)
@@ -305,6 +306,7 @@ def fragility(C, C0, X, O, N, T):
     """
     dx =(X*(T/O))/(N*T) # degree of perturbation
     sigma = np.mean(C-C0) # degree of satisfaction
+    #return sigma
     return -sigma*dx
     
 if __name__ == '__main__':
@@ -312,28 +314,30 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    K=2.0
-    N=5
+    K=5.0
+    N=100
     p=0.5
     T=10
     
     red=RBN()
     red.CreateNet(K, N, p)
-    print(red.Con)
-    print(red.Bool)
-    
-    A=red.Attractors(T, runs=1000)
-    print("\nAttractores: ")
-    print(len(A))
-    edos=0
-    for i in A:
-        edos+=len(i)
-    print("Longitud promedio de Attractores: ")
-    print(edos/len(A))
-    if(edos!= 0):
-        print(str(len(A)/(edos)*100)+"%")
+#    print(red.Con)
+#    print(red.Bool)
+#    
+#    A=red.Attractors(T, runs=1000)
+#    print("\nAttractores: ")
+#    print(len(A))
+#    edos=0
+#    for i in A:
+#        edos+=len(i)
+#    print("Longitud promedio de Attractores: ")
+#    print(edos/len(A))
+#    if(edos!= 0):
+#        print(str(len(A)/(edos)*100)+"%")
         
-    State=red.RunNet(T)
+    State=red.RunNet(2*T)
     plt.imshow(State, cmap='Greys', interpolation='None')
-         
+    
+    print(complexity(State[-T:]))
+        
     print("--- %s seconds ---" % (time.time() - start_time))
