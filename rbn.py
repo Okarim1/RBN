@@ -158,12 +158,14 @@ class RBN:
         Pow = 2**np.arange(np.size(self.Con, 1)) # [ 1 2 4 ... ], for converting inputs to numerical value
         
         if(type(self.K) is int):
+            a=0
             State = np.zeros((T+1,self.N),dtype=int)
             if np.array_equal(initial, []):
                 State[0] = np.random.randint(0, 2, self.N) 
             else:
                 State[0] = initial
         else:
+            a=1
             State = np.zeros((T+1,self.N+1),dtype=int)
             if np.array_equal(initial, []):
                 State[0] = np.append([0], np.random.randint(0, 2, self.N))
@@ -172,10 +174,11 @@ class RBN:
             self.Bool[np.where(self.Con[:,0]==0),0] = State[0, np.where(self.Con[:,0]==0)] # if node doesn't have conections not change 
         
         for t in range(T):  # 0 .. T-1
+                self.Bool[np.where(self.Con[:,0]==0),0] = State[t, np.where(self.Con[:,0]==0)]
                 State[t+1] = self.Bool[:, np.sum(Pow * State[t,self.Con],1)].diagonal()
                 if ( X and O ) != 0:  #Perturbations 
                     if t%O == 0:
-                        State[t+1,  np.random.choice(self.N, size=X, replace=False)] = np.random.randint(0, 2, X)
+                        State[t+1,  np.random.choice(self.N, size=X, replace=False)+a] = np.random.randint(0, 2, X)
                 if(Bio and self.e>0):
                     State[t+1, self.N-self.e+1:]=np.random.randint(0, 2, self.e)
         if(Bio and self.e>0):
@@ -263,15 +266,15 @@ class RBN:
     
     def func2(self, i, T, initial, X, C0, fraction=1):
         f=np.zeros(int(self.N/fraction))
-        State=self.RunNet(T, initial, X, i)
-        C = complexity(State)
+        State=self.RunNet(T*2, initial, X, i)
+        C = complexity(State[-T:])
         f=fragility(C, C0, X, i, self.N, T)
         return f
     
     def func(self, X, T, initial, O, C0, fraction=1):
         f=np.zeros(int(self.N/fraction))
-        State=self.RunNet(T, initial, X, O)
-        C = complexity(State)
+        State=self.RunNet(T*2, initial, X, O)
+        C = complexity(State[-T:])
         f=fragility(C, C0, X, O, self.N, T)
         return f
 #        if f < 0:
@@ -314,10 +317,12 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    K=5.0
-    N=100
+    K=3
+    N=20
     p=0.5
-    T=10
+    T=20
+    X=2
+    O=1
     
     red=RBN()
     red.CreateNet(K, N, p)
@@ -334,10 +339,37 @@ if __name__ == '__main__':
 #    print(edos/len(A))
 #    if(edos!= 0):
 #        print(str(len(A)/(edos)*100)+"%")
-        
-    State=red.RunNet(2*T)
-    plt.imshow(State, cmap='Greys', interpolation='None')
     
-    print(complexity(State[-T:]))
+    initial=np.random.randint(0, 2, N)
+    
+    State=red.RunNet(2*T, initial)
+    fig= plt.figure()
+    plt.imshow(State, cmap='Greys', interpolation='None')
+    plt.xlabel('Node')
+    plt.ylabel('Time')
+    plt.title("Without perturbations")
+    
+    plt.savefig("Figures/Figure_1b.eps")
+    plt.show()
+    
+    
+    
+    C0=complexity(State[-T:])
+    
+    print(C0)
+    
+    State=red.RunNet(2*T, initial, X=X, O=O)
+    plt.imshow(State, cmap='Greys', interpolation='None')
+    plt.xlabel('Node')
+    plt.ylabel('Time')
+    plt.title("With perturbations")
+    plt.savefig("Figures/Figure_1b2.eps")
+    plt.show()
+    
+    C=complexity(State[-T:])
+    
+    print(C)
+    
+    print(fragility(C,C0,X,O,N,T))
         
     print("--- %s seconds ---" % (time.time() - start_time))
