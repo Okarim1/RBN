@@ -14,6 +14,7 @@ plt.xlabel('X')
 plt.ylabel('O')
 im.set_clim(0, 1)
 plt.title("Probability at K=1")
+plt.savefig("Figure_6a.eps")
 
 data=np.load("npz/P2.npz")
 Z=data['arr_0']
@@ -25,6 +26,7 @@ plt.xlabel('X')
 plt.ylabel('O')
 im.set_clim(0, 1)
 plt.title("Probability at K=2")
+plt.savefig("Figure_6b.eps")
 
 data=np.load("npz/P3.npz")
 Z=data['arr_0']
@@ -36,6 +38,7 @@ plt.xlabel('X')
 plt.ylabel('O')
 im.set_clim(0, 1)
 plt.title("Probability at K=3")
+plt.savefig("Figure_6c.eps")
 
 data=np.load("npz/P4.npz")
 Z=data['arr_0']
@@ -47,6 +50,7 @@ plt.xlabel('X')
 plt.ylabel('O')
 im.set_clim(0, 1)
 plt.title("Probability at K=4")
+plt.savefig("Figure_6d.eps")
 
 data=np.load("npz/P5.npz")
 Z=data['arr_0']

@@ -7,7 +7,7 @@ plt.style.use('classic')
 red=rbn.RBN()
 
 red.CreateBioNet(1)
-data=np.load("Bio.npz")
+data=np.load("B1.npz")
 Z=data['arr_0']
 fig, ax = plt.subplots()
 im = ax.imshow(Z, extent=[1,red.N,20,1])

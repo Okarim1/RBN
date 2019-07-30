@@ -21,8 +21,9 @@ if __name__ == '__main__':
     colors=['b', 'orange', 'g', 'brown', 'purple']
     
     number_of_iterations=50
-    fraction=2
+    fraction=1
     plt.ylabel(u"\u0394\u03C3")
+    #plt.ylabel("Final Complexity")
     plt.xlabel("X")
     red=rbn.RBN()
     p1=np.zeros((5, int(N/fraction)))
@@ -42,12 +43,14 @@ if __name__ == '__main__':
     plt.title("Difference in Complexity")
     plt.legend()
     
+    plt.savefig("Figure_4c.eps")
+    
     plt.show()
-    plt.ylabel("Probability")
-    for K in range(1, 5):
-        plt.plot(np.arange(1,int(N/fraction)+1), p1[K-1], label="K= "+str(K))
-    plt.title("Probility of generating antifragile networks")
-    plt.legend()
+#    plt.ylabel("Probability")
+#    for K in range(1, 5):
+#        plt.plot(np.arange(1,int(N/fraction)+1), p1[K-1], label="K= "+str(K))
+#    plt.title("Probility of generating antifragile networks")
+#    plt.legend()
     
 #    red.CreateBioNet()
     

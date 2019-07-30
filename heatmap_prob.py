@@ -15,13 +15,13 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    N=18
+    N=100
     p=0.5
     T=100
-    K=3
+    K=2
     
-    maxO=20
-    number_of_iterations=10
+    maxO=30
+    number_of_iterations=50
     fraction=1
     
     Z= np.zeros([maxO,int(N/fraction)])
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         j+=1
     
     
-    np.savez("BP3.npz", Z)
+    np.savez("BP2.npz", Z)
     
     fig = plt.figure()
     ax = fig.gca(projection='3d')

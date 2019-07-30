@@ -25,7 +25,7 @@ if __name__ == '__main__':
     g1=[]
     yerr=[]
     
-    rango=np.arange(0.1, 5.0, 0.1)
+    rango=np.arange(0.1, 5.1, 0.1)
     for K in tqdm(rango):
         C=[]
         for x in range(number_of_iterations):
@@ -37,5 +37,7 @@ if __name__ == '__main__':
     
     plt.errorbar(rango, g1, label="K= "+str(K), yerr=stats.sem(yerr,1), ecolor='r')
     plt.title("Average Complexity")    
-    
+    plt.ylim(top=1)
+    plt.savefig("Figure_4a.eps")
+    np.savez("initComplex.npz", g1)
     print("--- %s seconds ---" % (time.time() - start_time))

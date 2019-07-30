@@ -15,13 +15,13 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    N=12
-    #p=0.5
+    red=rbn.RBN()
+    red.CreateBioNet(6)
+    N=red.N
     T=100
-    #K=6.5
     
     maxO=20
-    number_of_iterations=10
+    number_of_iterations=1
     fraction=1
     
     Z= np.zeros([maxO,int(N/fraction)])
@@ -30,40 +30,17 @@ if __name__ == '__main__':
         f=np.zeros(( number_of_iterations, int(N/fraction) ))
         i=0
         for x in range(number_of_iterations):
-            red=rbn.RBN()
-            red.CreateBioNet(4)
             f[i]=red.antifragile(T, runs=500, O=O+1)
             i+=1
             
-        Z[j,:]=np.sum(np.array(f) < 0, axis=0)/number_of_iterations
+        Z[j,:]=np.sum(np.array(f), axis=0)/number_of_iterations
         j+=1
     
     
-    np.savez("BioProb4.npz", Z)
+    np.savez("BioProb6.npz", Z)
     
     fig = plt.figure()
-    ax = fig.gca(projection='3d')
     
-    X = np.arange(1, int(N/fraction)+1)
-    Y = np.arange(1, maxO+1)
-    X, Y = np.meshgrid(X, Y)
-    
-    
-    ax.plot_surface(X, Y, Z)
-    cset = ax.contour(X, Y, Z, zdir='z', offset=-0.2, cmap=cm.coolwarm)
-    cset = ax.contour(X, Y, Z, zdir='x', offset=0, cmap=cm.coolwarm)
-    cset = ax.contour(X, Y, Z, zdir='y', offset=50, cmap=cm.coolwarm)
-    
-    ax.set_xlabel('X')
-    ax.set_xlim(0, 50)
-    ax.set_ylabel('O')
-    ax.set_ylim(0, 50)
-    ax.set_zlabel('fragility')
-    ax.set_zlim(-0.2, 0.2)
-    
-    plt.show()
-    
-    plt.style.use('classic')
     fig, ax = plt.subplots()
     im = ax.imshow(Z, extent=[1,red.N,maxO,1])
     plt.xlabel('X')
